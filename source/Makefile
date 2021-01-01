@@ -274,27 +274,23 @@ ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_MATERIAL)
 endif
 
 ifeq ($(findstring YANEURAOU_ENGINE_DEEP,$(YANEURAOU_EDITION)),YANEURAOU_ENGINE_DEEP)
-	ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_DEEP)
-	else
-		# YANEURAOU_EDITIONがYANEURAOU_ENGINE_DEEPの後ろに文字が入っている名前なら、
-		# とりあえず"YANEURAOU_ENGINE_DEEP"というシンボルを定義してやる。
-		CPPFLAGS += -DYANEURAOU_ENGINE_DEEP
-
-		ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_DEEP_TENSOR_RT)
-			CPPFLAGS += -DTENSOR_RT
-			LDFLAGS += -lnvinfer -lnvparsers -lnvonnxparser -lcuda -lcudnn -lcudart -lcublas
-			# CPPFLAGS += -I/usr/local/cuda/include
-			# LDFLAGS += -L/usr/local/cuda/lib64
-
-		else ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_DEEP_ORT_CPU)
+	# YANEURAOU_EDITIONがYANEURAOU_ENGINE_DEEPの後ろに文字が入っている名前なら、
+	# とりあえず"YANEURAOU_ENGINE_DEEP"というシンボルを定義してやる。
+	CPPFLAGS += -DYANEURAOU_ENGINE_DEEP
+	ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_DEEP_TENSOR_RT)
+		# Tensor RT版のビルド定義
+		CPPFLAGS += -DTENSOR_RT -I/usr/local/cuda/include
+		LDFLAGS  += -lnvinfer -lnvparsers -lnvonnxparser -lcuda -lcudnn -lcudart -lcublas -L/usr/local/cuda/lib64
+	else ifeq ($(findstring YANEURAOU_ENGINE_DEEP_ORT,$(YANEURAOU_EDITION)),YANEURAOU_ENGINE_DEEP_ORT)
+		# ONNX Runtime版のビルド定義
+		CPPFLAGS += -DONNXRUNTIME -I/usr/local/onnx/include
+		LDFLAGS  += -lnvinfer -lnvparsers -lnvonnxparser -L/usr/local/onnx/lib
+		ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_DEEP_ORT_CPU)
 			CPPFLAGS += -DORT_CPU
-
 		else ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_DEEP_ORT_DML)
 			CPPFLAGS += -DORT_DML
-
 		else ifeq ($(YANEURAOU_EDITION),YANEURAOU_ENGINE_DEEP_ORT_MKL)
 			CPPFLAGS += -DORT_MKL
-
 		endif
 	endif
 

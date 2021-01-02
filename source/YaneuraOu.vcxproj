@@ -409,6 +409,11 @@
     <Import Project="..\packages\OpenBLAS.0.2.14.1\build\native\openblas.targets" Condition="Exists('..\packages\OpenBLAS.0.2.14.1\build\native\openblas.targets')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Deep-TensorRT|x64'">
+    <IncludePath>D:\TensorRT-7.2.2.3\include;D:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\TensorRT-7.2.2.3\lib;D:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1\lib\x64;$(LibraryPath)</LibraryPath>
+    <TargetName>FukauraOu</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-tanuki-mate|x64'">
     <ClCompile>
       <OpenMPSupport>
@@ -570,6 +575,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-NNUE-LEARN|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_CONSOLE;_UNICODE;UNICODE;%(PreprocessorDefinitions);USE_BLAS</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Deep-TensorRT|x64'">
+    <ClCompile>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -248,16 +248,27 @@ namespace dlshogi
 		// これが、policy_value_batch_maxsize分だけ溜まったら、nn->forward()を呼び出す。
 	}
 
+	// leaf node用の詰め将棋ルーチンの初期化を行う。
+	void UctSearcher::InitMateSearcher(const SearchOptions& options)
+	{
+		// -- leaf nodeで奇数手詰めを用いる時
+
+		// 引き分けの手数の設定
+		mate_solver.set_max_game_ply(options.max_moves_to_draw);
+
+		// -- leaf nodeでdf-pn solverを用いる時はメモリの確保も必要
+
+		//mate_solver.alloc           (options.leaf_mate_search_nodes_limit);
+
+		// →　気が向いたら実装する
+	}
+
 	// UCTアルゴリズムによる並列探索の各スレッドのEntry Point
 	// ※　Thread::search()から呼び出す。
 	void UctSearcher::ParallelUctSearchStart(const Position& rootPos)
 	{
 		// このスレッドとGPUとを紐付ける。
 		grp->set_device();
-
-		// 引き分けになる手数をleaf nodeで用いるmate solverに設定する。
-		int max_moves_to_draw = grp->get_dlsearcher()->search_options.max_moves_to_draw;
-		mate_solver.set_max_game_ply(max_moves_to_draw);
 
 		// 並列探索の開始
 		ParallelUctSearch(rootPos);
@@ -451,8 +462,20 @@ namespace dlshogi
 			RepetitionState rep;
 
 			// この局面の手数が最大手数を超えているなら千日手扱いにする。
+
+			// この局面で詰んでいる可能性がある。その時はmatedのスコアを返すべき。
+			// 詰んでいないなら引き分けのスコアを返すべき。
+			//
+			// 関連)
+			//    多くの将棋ソフトで256手ルールの実装がバグっている件
+			//    https://yaneuraou.yaneu.com/2021/01/13/incorrectly-implemented-the-256-moves-rule/
+			//
+			// デフォルトではleaf nodeで5手詰めは呼び出しているので、その5手詰めで普通1手詰めが漏れることはないので、
+			// 256手ルールの256手目で1手詰めがあるのにそれを逃して257手目の局面に到達することはありえない…ということであれば、
+			// これは問題とはない。(leaf nodeで5手詰めを呼び出さないエンジン設定にした時に困るが。)
+
 			if (options.max_moves_to_draw < pos->game_ply())
-				rep = REPETITION_DRAW;
+				rep = pos->is_mated() ? REPETITION_LOSE /* 負け扱い */ : REPETITION_DRAW;
 			else
 				rep = pos->is_repetition(16);
 
